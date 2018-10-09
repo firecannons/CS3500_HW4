@@ -5,7 +5,7 @@
         bison baxz.y
         g++ baxz.tab.c -o parser
         parser < let_noErrors.txt > myoutput.out
-        diff myoutput.out let_noErrors.txt.out --ignore-space-change --side-by-side --ignore-case --ignore-blank-lines
+        diff myoutput.out let_noErrors.txt.out --ignore-space-change --side-by-side --ignore-case --ignore-blank-lines --color
  */
 
 %{
