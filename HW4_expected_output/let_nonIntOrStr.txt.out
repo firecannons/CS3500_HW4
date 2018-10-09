@@ -1,0 +1,31 @@
+TOKEN: LPAREN    LEXEME: (
+TOKEN: LETSTAR   LEXEME: let*
+
+___Entering new scope...
+
+TOKEN: LPAREN    LEXEME: (
+ID_EXPR_LIST -> epsilon
+TOKEN: RPAREN    LEXEME: )
+TOKEN: LPAREN    LEXEME: (
+TOKEN: LAMBDA    LEXEME: lambda
+
+___Entering new scope...
+
+TOKEN: LPAREN    LEXEME: (
+ID_LIST -> epsilon
+TOKEN: RPAREN    LEXEME: )
+TOKEN: INTCONST  LEXEME: 42
+CONST -> INTCONST
+EXPR -> CONST
+LAMBDA_EXPR -> lambda ( ID_LIST ) EXPR
+
+___Exiting scope...
+
+PARENTHESIZED_EXPR -> LAMBDA_EXPR
+TOKEN: RPAREN    LEXEME: )
+EXPR -> ( PARENTHESIZED_EXPR )
+LET_EXPR -> let* ( ID_EXPR_LIST ) EXPR
+
+___Exiting scope...
+
+Line 2: Arg 2 cannot be function

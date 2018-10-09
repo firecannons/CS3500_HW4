@@ -1,0 +1,12 @@
+TOKEN: LPAREN    LEXEME: (
+TOKEN: DIV       LEXEME: /
+ARITH_OP -> /
+BIN_OP -> ARITH_OP
+TOKEN: T         LEXEME: t
+CONST -> t
+EXPR -> CONST
+TOKEN: NIL       LEXEME: nil
+CONST -> nil
+EXPR -> CONST
+ARITHLOGIC_EXPR -> BIN_OP EXPR EXPR
+Line 1: Arg 1 must be integer

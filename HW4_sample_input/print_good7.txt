@@ -1,0 +1,2 @@
+(print (and (>= 5 6) (not (= "happy" "sad"))))
+

@@ -1,0 +1,6 @@
+(print
+  (let* ( (s "kitty paws")
+     )
+  s
+  )
+)
