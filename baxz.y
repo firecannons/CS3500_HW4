@@ -44,7 +44,7 @@ int yyerror(const char *s);
 void printTokenInfo(const char* tokenType, const char* lexeme);
 void beginScope( );
 void endScope( );
-bool findEntryInAnyScope(const std::string theName);
+bool findEntryInAnyScope(const string theName, SYMBOL_TABLE_ENTRY & temp);
 
 extern "C" 
 {
@@ -58,6 +58,7 @@ extern "C"
 %union
 {
   char* text;
+  TYPE_INFO typeInfo;
 };
 
 /* Token declarations */
@@ -88,6 +89,7 @@ extern "C"
 %token T_NOT
 
 %type <text> T_IDENT
+%type <typeInfo> N_CONST N_EXPR N_PARENTHESIZED_EXPR N_IF_EXPR N_LAMBDA_EXPR N_ARITHLOGIC_EXPR
 
 /* Starting point */
 %start		N_START
@@ -104,22 +106,32 @@ N_START		: N_EXPR
 			;
 N_EXPR    : N_CONST
       {
+      $$.type = $1.type;
       printRule("EXPR", "CONST");
       }
     | T_IDENT
       {
       printRule("EXPR", "IDENT");
-      if (!findEntryInAnyScope(string $1))
+      SYMBOL_TABLE_ENTRY temp;
+      if (!findEntryInAnyScope(string $1, temp))
         yyerror("Undefined identifier");
+      findEntryInAnyScope(string $1, temp);
+      $$.type = temp.getTypeCode();
       }
     | T_LPAREN N_PARENTHESIZED_EXPR T_RPAREN
       {
       printRule("EXPR", "( PARENTHESIZED_EXPR )");
+      $$.type = $2.type;
+      $$.numParams = $2.numParams;
+      $$.returnType = $2.returnType;
       }
       ;
 N_CONST   : T_INTCONST
       {
       printRule("CONST", "INTCONST");
+      $$.type = INT;
+      $$.numParams = NOT_APPLICABLE;
+      $$.returnType = NOT_APPLICABLE;
       }
           | T_STRCONST
       {
@@ -148,6 +160,7 @@ N_PARENTHESIZED_EXPR    : N_ARITHLOGIC_EXPR
       }
     | N_LAMBDA_EXPR
       {
+      $$.type = $1.type;
       printRule("PARENTHESIZED_EXPR", "LAMBDA_EXPR");
       }
     | N_PRINT_EXPR
@@ -166,10 +179,28 @@ N_PARENTHESIZED_EXPR    : N_ARITHLOGIC_EXPR
 N_ARITHLOGIC_EXPR      : N_UN_OP N_EXPR
       {
       printRule("ARITHLOGIC_EXPR", "UN_OP EXPR");
+      if ($2.type == FUNCTION)
+      {
+            yyerror("Arg 1 cannot be function");
+            return(1);
+      }
+      $$.type = BOOL;
+      $$.numParams = NOT_APPLICABLE;
+      $$.returnType = NOT_APPLICABLE;
       }
     | N_BIN_OP N_EXPR N_EXPR
       {
       printRule("ARITHLOGIC_EXPR", "BIN_OP EXPR EXPR");
+            if ( $2.type != INT )
+            {
+                  yyerror("Arg 1 must be integer");
+                  exit(1);
+            }
+            if ( $3.type != INT )
+            {
+                  yyerror("Arg 2 must be integer");
+                  exit(1);
+            }
       }
     ;
 N_IF_EXPR               : T_IF N_EXPR N_EXPR N_EXPR
@@ -198,6 +229,7 @@ N_ID_EXPR_LIST          : /* epsilon */
       ;
 N_LAMBDA_EXPR           : T_LAMBDA T_LPAREN N_ID_LIST T_RPAREN N_EXPR
       {
+      $$.type = FUNCTION;
       printRule("LAMBDA_EXPR", "LAMBDA ( ID_LIST ) EXPR");
       endScope();
       }
@@ -210,10 +242,10 @@ N_ID_LIST               : /* epsilon */
       {
       printRule("ID_LIST", "ID_LIST IDENT");
       printf("___Adding %s to symbol table\n", $2);
-      if (!scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($2, UNDEFINED)))
+      if (!scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($2, INT)))
       	yyerror("Multiply defined identifier");
       else
-      	scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($2, UNDEFINED));
+      	scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($2, INT));
       }
       ;
 N_PRINT_EXPR            : T_PRINT N_EXPR
@@ -351,11 +383,11 @@ void endScope( )
   printf("\n___Exiting scope...\n\n");
 }
 
-bool findEntryInAnyScope(const string theName) 
+bool findEntryInAnyScope(const string theName, SYMBOL_TABLE_ENTRY & temp) 
 {
   if (scopeStack.empty( )) 
     return(false);
-  bool found = scopeStack.top( ).findEntry(theName);
+  bool found = scopeStack.top( ).findEntry(theName, temp);
   if (found)
     return(true);
   else
@@ -363,7 +395,7 @@ bool findEntryInAnyScope(const string theName)
     // check in "next higher" scope
     SYMBOL_TABLE symbolTable = scopeStack.top( );
     scopeStack.pop( );
-    found = findEntryInAnyScope(theName);
+    found = findEntryInAnyScope(theName, temp);
     scopeStack.push(symbolTable); // restore the stack
     return(found);
   } 

@@ -32,12 +32,27 @@ public:
   // If a SYMBOL_TABLE_ENTRY with name theName is
   // found in this symbol table, then return true;
   // otherwise, return false.
+  bool findEntry(string theName, SYMBOL_TABLE_ENTRY & temp) 
+  {
+    map<string, SYMBOL_TABLE_ENTRY>::iterator itr;
+    if ((itr = hashTable.find(theName)) == hashTable.end())
+      return(false);
+    else
+    {
+      temp = itr->second;
+      return(true);
+    }
+  }
+  
   bool findEntry(string theName) 
   {
     map<string, SYMBOL_TABLE_ENTRY>::iterator itr;
     if ((itr = hashTable.find(theName)) == hashTable.end())
       return(false);
-    else return(true);
+    else
+    {
+      return(true);
+    }
   }
 
 };
