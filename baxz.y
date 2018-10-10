@@ -135,7 +135,10 @@ N_CONST   : T_INTCONST
       }
           | T_STRCONST
       {
-      printRule("CONST", "STRCONST");         
+      printRule("CONST", "STRCONST");   
+      $$.type = STR;   
+      $$.numParams = NOT_APPLICABLE;
+      $$.returnType = NOT_APPLICABLE;   
       }
           | T_T
       {
