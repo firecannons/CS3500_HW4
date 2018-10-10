@@ -6,6 +6,7 @@
         g++ baxz.tab.c -o parser
         parser < let_noErrors.txt > myoutput.out
         diff myoutput.out fileName.txt.out --ignore-space-change --side-by-side --ignore-case --ignore-blank-lines --color
+        python3 Runner.py out HW4_sample_input HW4_expected_output
  */
 
 %{

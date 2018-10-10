@@ -8,6 +8,8 @@ OutputFolder = sys . argv [ 3 ]
 
 print ( sys . argv )
 
+mystr = ''
+
 for filename in os.listdir(InputFolder):
   print ( filename )
   filename2, file_extension = os.path.splitext(filename)
@@ -17,3 +19,11 @@ for filename in os.listdir(InputFolder):
     proc_string = proc_string + Item + ' '
   #subprocess.call( subproc_array )
   os.system(proc_string)
+  
+  
+  subproc_array = [ 'colordiff' , OutputFolder + '/' + filename2 + file_extension + '.out' , OutputFolder + '/' + filename2 + '-my' + file_extension , '--ignore-case' ]
+  proc_string = ''
+  for Item in subproc_array :
+    proc_string = proc_string + Item + ' '
+  mystr = os.system(proc_string)
+  print ( proc_string )
