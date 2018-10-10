@@ -5,7 +5,7 @@
         bison baxz.y
         g++ baxz.tab.c -o parser
         parser < let_noErrors.txt > myoutput.out
-        diff myoutput.out let_noErrors.txt.out --ignore-space-change --side-by-side --ignore-case --ignore-blank-lines --color
+        diff myoutput.out fileName.txt.out --ignore-space-change --side-by-side --ignore-case --ignore-blank-lines --color
  */
 
 %{
@@ -14,6 +14,7 @@
 #include <string>
 #include <stack>
 #include <map>
+#include <iostream>
 
 #define UNDEFINED  -1   // Type codes
 #define FUNCTION 0
@@ -194,12 +195,12 @@ N_ARITHLOGIC_EXPR      : N_UN_OP N_EXPR
     | N_BIN_OP N_EXPR N_EXPR
       {
       printRule("ARITHLOGIC_EXPR", "BIN_OP EXPR EXPR");
-            if ( $2.type != INT )
+            if ( $2.type != INT && $2.type != STR)
             {
                   yyerror("Arg 1 must be integer");
                   exit(1);
             }
-            if ( $3.type != INT )
+            if ( $3.type != INT && $3.type != STR)
             {
                   yyerror("Arg 2 must be integer");
                   exit(1);
