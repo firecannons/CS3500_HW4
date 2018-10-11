@@ -90,7 +90,7 @@ extern "C"
 %token T_NE
 %token T_NOT
 
-%type <text> T_IDENT
+%type <text> T_IDENT N_BIN_OP N_ARITH_OP N_LOG_OP N_REL_OP
 %type <typeInfo> N_CONST N_EXPR N_PARENTHESIZED_EXPR N_IF_EXPR N_LAMBDA_EXPR N_ARITHLOGIC_EXPR
 
 /* Starting point */
@@ -123,6 +123,7 @@ N_EXPR    : N_CONST
     | T_LPAREN N_PARENTHESIZED_EXPR T_RPAREN
       {
       printRule("EXPR", "( PARENTHESIZED_EXPR )");
+      cout << $2.type << " = $2.type " << endl ;
       $$.type = $2.type;
       $$.numParams = $2.numParams;
       $$.returnType = $2.returnType;
@@ -195,16 +196,44 @@ N_ARITHLOGIC_EXPR      : N_UN_OP N_EXPR
       }
     | N_BIN_OP N_EXPR N_EXPR
       {
-      printRule("ARITHLOGIC_EXPR", "BIN_OP EXPR EXPR");
-            if ( $2.type != INT && $2.type != STR)
+            printRule("ARITHLOGIC_EXPR", "BIN_OP EXPR EXPR");
+            //cout << $1 << " " << strcmp ( $1 , "<") << " " << ( strcmp ( $1 , "<") != 0 || strcmp ( $1 , ">") != 0 || strcmp ( $1 , "<=") != 0 || strcmp ( $1 , ">=") != 0 || strcmp ( $1 , "=") != 0 || strcmp ( $1 , "/=") != 0 ) << endl ;
+            if ( strcmp ( $1 , "<") == 0 || strcmp ( $1 , ">") == 0 || strcmp ( $1 , "<=") == 0 || strcmp ( $1 , ">=") == 0 || strcmp ( $1 , "=") == 0 || strcmp ( $1 , "/=") == 0 )
             {
-                  yyerror("Arg 1 must be integer");
-                  exit(1);
+                  if ( $2.type == INT )
+                  {
+                        if ( $3.type != INT )
+                        {
+                              yyerror("Arg 2 must be integer or string");
+                              exit(1);
+                        }
+                  }
+                  else if ( $2.type == STR )
+                  {
+                        if ( $3.type != STR )
+                        {
+                              yyerror("Arg 2 must be integer or string");
+                              exit(1);
+                        }
+                  }
+                  else
+                  {
+                       yyerror("Arg 1 must be integer or string");
+                       exit(1); 
+                  }
             }
-            if ( $3.type != INT && $3.type != STR)
+            if ( strcmp ( $1 , "*") == 0 || strcmp ( $1 , "+") == 0 || strcmp ( $1 , "-") == 0 || strcmp ( $1 , "/") == 0 )
             {
-                  yyerror("Arg 2 must be integer");
-                  exit(1);
+                  if ( $2.type != INT )
+                  {
+                       yyerror("Arg 1 must be integer");
+                       exit(1); 
+                  }
+                  else if ( $3.type != INT )
+                  {
+                       yyerror("Arg 2 must be integer");
+                       exit(1); 
+                  }
             }
       }
     ;
@@ -255,7 +284,16 @@ N_ID_LIST               : /* epsilon */
       ;
 N_PRINT_EXPR            : T_PRINT N_EXPR
       {
-      printRule("PRINT_EXPR", "PRINT EXPR");
+            SYMBOL_TABLE_ENTRY temp;
+            if (!findEntryInAnyScope(string ( $2.name ), temp))
+              yyerror("Undefined identifier");
+            findEntryInAnyScope(string($2.name), temp);
+            if ( $2.type == FUNCTION )
+            {
+                  yyerror("Arg 1 cannot be function");
+                  exit(1); 
+            }
+            printRule("PRINT_EXPR", "PRINT EXPR");
       }
       ;
 N_INPUT_EXPR            : T_INPUT
@@ -276,65 +314,80 @@ N_EXPR_LIST             : N_EXPR N_EXPR_LIST
 N_BIN_OP                : N_ARITH_OP
       {
       printRule("BIN_OP", "ARITH_OP");
+      $$ = $1;
       }
     | N_LOG_OP
       {
       printRule("BIN_OP", "LOG_OP");
+      $$ = $1;
       }
     | N_REL_OP
       {
       printRule("BIN_OP", "REL_OP");
+      $$ = $1;
       }
       ;
 N_ARITH_OP              : T_MULT
       {
       printRule("ARITH_OP", "*");
+      $$ = "*";
       }
     | T_SUB
       {
       printRule("ARITH_OP", "-");
+      $$ = "-";
       }
     | T_DIV
       {
       printRule("ARITH_OP", "/");
+      $$ = "/";
       }
     | T_ADD
       {
       printRule("ARITH_OP", "+");
+      $$ = "+";
       }
       ;
 N_LOG_OP                : T_AND
       {
       printRule("LOG_OP", "and");
+      $$ = "and";
       }
     | T_OR
       {
       printRule("LOG_OP", "or");
+      $$ = "or";
       }
       ;
 N_REL_OP                : T_LT
       {
       printRule("REL_OP", "<");
+      $$ = "<";
       }
     | T_GT
       {
       printRule("REL_OP", ">");
+      $$ = ">";
       }
     | T_LE
       {
       printRule("REL_OP", "<=");
+      $$ = "<=";
       }
     | T_GE
       {
       printRule("REL_OP", ">=");
+      $$ = ">=";
       }
     | T_EQ
       {
       printRule("REL_OP", "=");
+      $$ = "=";
       }
     | T_NE
       {
       printRule("REL_OP", "/=");
+      $$ = "/=";
       }
       ;
 N_UN_OP                 : T_NOT

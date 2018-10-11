@@ -11,7 +11,6 @@ print ( sys . argv )
 mystr = ''
 
 for filename in os.listdir(InputFolder):
-  print ( filename )
   filename2, file_extension = os.path.splitext(filename)
   subproc_array = [ './' + ExecutableName , '<' , InputFolder + '/' + filename , '>' , OutputFolder + '/' + filename2 + '-my' + file_extension ]
   proc_string = ''
