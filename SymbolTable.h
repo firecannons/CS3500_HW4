@@ -8,7 +8,7 @@ using namespace std;
 
 class SYMBOL_TABLE 
 {
-private:
+public:
   std::map<string, SYMBOL_TABLE_ENTRY> hashTable;
 
 public:
