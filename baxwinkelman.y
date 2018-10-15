@@ -121,18 +121,6 @@ N_EXPR    : N_CONST
     | T_IDENT
       {
       printRule("EXPR", "IDENT");
-      /*cout << "printing symbol table" << endl ;
-      map<string, SYMBOL_TABLE_ENTRY>::iterator it;
-      for ( it = scopeStack.top().hashTable.begin(); it != scopeStack.top().hashTable.end(); it++ )
-      {
-          std::cout << it->first  // string (key)
-                    << ": ("
-                    << it->second.getName() << " "   // string's value 
-                    << it->second.getTypeCode() << " "
-                    << it->second.getNumParams() << " "
-                    << it->second.getReturnType() << " ) "
-                    << std::endl ;
-      }*/
       
       SYMBOL_TABLE_ENTRY temp;
       if (!findEntryInAnyScope(string $1, temp))
@@ -141,16 +129,13 @@ N_EXPR    : N_CONST
       $$.type = temp.getTypeCode();
       $$.numParams = temp.getNumParams();
       $$.returnType = temp.getReturnType();
-      //cout << "resolving " << $1 << " " << $$.type << " " << temp.getTypeCode() << " " << temp.getNumParams() << " " << temp.getReturnType() << endl ;
       }
     | T_LPAREN N_PARENTHESIZED_EXPR T_RPAREN
       {
       printRule("EXPR", "( PARENTHESIZED_EXPR )");
-      //cout << $2.type << " = $2.type " << endl ;
       $$.type = $2.type;
       $$.numParams = $2.numParams;
       $$.returnType = $2.returnType;
-      //cout << $$.numParams << endl ;
       }
       ;
 N_CONST   : T_INTCONST
@@ -199,7 +184,6 @@ N_PARENTHESIZED_EXPR    : N_ARITHLOGIC_EXPR
       $$.type = $1.type;
       $$.returnType = $1.returnType;
       $$.numParams = $1.numParams;
-      //cout << $$.numParams << endl ;
       }
     | N_PRINT_EXPR
       {
@@ -232,7 +216,6 @@ N_ARITHLOGIC_EXPR      : N_UN_OP N_EXPR
     | N_BIN_OP N_EXPR N_EXPR
       {
             printRule("ARITHLOGIC_EXPR", "BIN_OP EXPR EXPR");
-            //cout << $1 << " " << strcmp ( $1 , "<") << " " << ( strcmp ( $1 , "<") != 0 || strcmp ( $1 , ">") != 0 || strcmp ( $1 , "<=") != 0 || strcmp ( $1 , ">=") != 0 || strcmp ( $1 , "=") != 0 || strcmp ( $1 , "/=") != 0 ) << endl ;
             if ( strcmp ( $1 , "<") == 0 || strcmp ( $1 , ">") == 0 || strcmp ( $1 , "<=") == 0 || strcmp ( $1 , ">=") == 0 || strcmp ( $1 , "=") == 0 || strcmp ( $1 , "/=") == 0 )
             {
                   if ( isBitSet ( $2.type , 1 ) )
@@ -308,7 +291,6 @@ N_LET_EXPR              : T_LETSTAR T_LPAREN N_ID_EXPR_LIST T_RPAREN N_EXPR
       {
       printRule("LET_EXPR", "let* ( ID_EXPR_LIST ) EXPR");
       endScope();
-      //cout << $5.type << " = $5.type" << endl ;
       if ( $5.type == FUNCTION )
       {
             yyerror("Arg 2 cannot be function");
@@ -329,7 +311,6 @@ N_ID_EXPR_LIST          : /* epsilon */
       	yyerror("Multiply defined identifier");
       else
       	scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($3, $4.type));
-      //cout << $4.type << endl ;
       }
       ;
 N_LAMBDA_EXPR           : T_LAMBDA T_LPAREN N_ID_LIST T_RPAREN N_EXPR
@@ -346,7 +327,6 @@ N_LAMBDA_EXPR           : T_LAMBDA T_LPAREN N_ID_LIST T_RPAREN N_EXPR
             $$.type = FUNCTION;
             $$.numParams = $3.numParams;
             $$.returnType = $5.type;
-            //cout << "number params = " << $$.numParams << endl ;
       }
       }
       ;
@@ -364,17 +344,11 @@ N_ID_LIST               : /* epsilon */
       else
       	scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY($2, INT));
       $$.numParams = $1.numParams + 1 ;
-      //cout << $1.numParams << " plus 1 makes " << $$.numParams << endl ;
       }
       ;
 N_PRINT_EXPR            : T_PRINT N_EXPR
       {
             printRule("PRINT_EXPR", "print EXPR");
-            /*SYMBOL_TABLE_ENTRY temp;
-            if (!findEntryInAnyScope(string ( $2.name ), temp))
-              yyerror("Undefined identifier");
-            findEntryInAnyScope(string($2.name), temp);*/
-            //cout << $2.type << endl;
             if ( $2.type == FUNCTION )
             {
                   yyerror("Arg 1 cannot be function");
@@ -393,7 +367,6 @@ N_INPUT_EXPR            : T_INPUT
 N_EXPR_LIST             : N_EXPR N_EXPR_LIST
       {
       printRule("EXPR_LIST", "EXPR EXPR_LIST");
-      //cout << $1.type << " " << $2.type << " " << $1.returnType << " " << $2.returnType << endl ;
       if ( $2.type == FUNCTION )
       {
             yyerror("Arg 2 cannot be function");
@@ -401,7 +374,6 @@ N_EXPR_LIST             : N_EXPR N_EXPR_LIST
       }
       else if ( $1.type == FUNCTION )
       {
-            //cout << " checking param numbers " << $1.numParams << " " << $2.numParams << endl ;
             if ( $1.numParams < $2.numParams )
             {
                   yyerror("Too many parameters in function call");
@@ -432,7 +404,6 @@ N_EXPR_LIST             : N_EXPR N_EXPR_LIST
             $$.numParams = 1;
             $$.type = $1.type;
       }
-      //cout << $$.type << " = $$.type " << endl ;
       }
       ;
 N_BIN_OP                : N_ARITH_OP
@@ -535,7 +506,6 @@ int yyerror(const char *s)
 {
   printf("Line %d: %s\n", numLines, s);
   exit(1);
-  // return(1);
 }
 
 void printTokenInfo(const char* tokenType, const char* lexeme) 

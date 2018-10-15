@@ -20,7 +20,7 @@ for filename in os.listdir(InputFolder):
   os.system(proc_string)
   
   
-  subproc_array = [ 'colordiff' , OutputFolder + '/' + filename2 + file_extension + '.out' , OutputFolder + '/' + filename2 + '-my' + file_extension ]
+  subproc_array = [ 'diff' , OutputFolder + '/' + filename2 + file_extension + '.out' , OutputFolder + '/' + filename2 + '-my' + file_extension ]
   proc_string = ''
   for Item in subproc_array :
     proc_string = proc_string + Item + ' '
